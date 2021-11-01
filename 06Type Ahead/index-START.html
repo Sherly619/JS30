@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+  <script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+    const cities = [];
+    fetch(endpoint).then(response => response.json()).then(data => cities.push(...data));
+
+    function find(cities) {
+      const suggestions = document.querySelector('.suggestions');
+      suggestions.innerHTML = '';
+      if (this.value) {
+        const keywords = new RegExp(`${this.value}`, 'ig');
+        const newCities = cities.filter(place => keywords.test(place.city) || keywords.test(place.state));
+        console.log(newCities)
+        for (i = 0; i < newCities.length; i++) {
+          let insertCity = newCities[i].city;
+          let insertState = newCities[i].state;
+          let insertPopulation = newCities[i].population;
+          insertPopulation = insertPopulation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+          insertCity = insertCity.replace(keywords, `<span class="hl">${this.value}</span>`);
+          insertState = insertState.replace(keywords, `<span class="hl">${this.value}</span>`);
+          const insertElement = `<li>
+            <span>${insertCity},${insertState}</span>
+            <span class="population">${insertPopulation}</span>
+            </li>`;
+          suggestions.insertAdjacentHTML('beforeend', insertElement);
+        }
+      }
+      else {
+        suggestions.innerHTML = `<li>Filter for a city</li> <li>or a state</li>`
+      }
+
+    }
+
+    const input = document.querySelector('.search');
+    input.addEventListener('input', find.bind(input, cities));
+
+  </script>
+</body>
+
+</html>
